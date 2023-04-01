@@ -2,6 +2,7 @@ package main
 
 import (
 	"os"
+	"restaurant-mgmnt/configs"
 	"restaurant-mgmnt/middlewares"
 	"restaurant-mgmnt/repositories"
 	"restaurant-mgmnt/routers"
@@ -13,6 +14,11 @@ import (
 var foodCollection *mongo.Collection = repositories.OpenCollection(repositories.Client, "food")
 
 func main() {
+	err := configs.LoadConfig()
+	if err != nil {
+		panic(err)
+	}
+
 	port := os.Getenv("PORT")
 
 	if port == "" {
