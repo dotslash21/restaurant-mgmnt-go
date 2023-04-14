@@ -89,10 +89,16 @@ func GetInvoice(c *gin.Context) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	id := c.Param("id")
+	id, err := primitive.ObjectIDFromHex(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Error occurred while parsing the invoice id.",
+		})
+		return
+	}
 
 	var invoice models.Invoice
-	err := invoiceCollection.FindOne(ctx, bson.M{"_id": id}).Decode(&invoice)
+	err = invoiceCollection.FindOne(ctx, bson.M{"_id": id}).Decode(&invoice)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error occurred while fetching the invoice item."})
 	}
@@ -177,7 +183,14 @@ func UpdateInvoice(c *gin.Context) {
 	invoice.UpdatedAt, _ = time.Parse(time.RFC3339, time.Now().Format(time.RFC3339))
 	updateObj = append(updateObj, bson.E{Key: "updated_at", Value: invoice.UpdatedAt})
 
-	id := c.Param("id")
+	id, err := primitive.ObjectIDFromHex(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Error occurred while parsing the invoice id.",
+		})
+		return
+	}
+
 	filter := bson.M{"_id": id}
 	upsert := true
 	opts := options.UpdateOptions{

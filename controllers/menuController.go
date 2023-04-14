@@ -35,10 +35,16 @@ func GetMenu(c *gin.Context) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	id := c.Param("id")
+	id, err := primitive.ObjectIDFromHex(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Error occurred while parsing the menu id.",
+		})
+		return
+	}
 
 	var menu models.Menu
-	err := menuCollection.FindOne(ctx, bson.M{"_id": id}).Decode(&menu)
+	err = menuCollection.FindOne(ctx, bson.M{"_id": id}).Decode(&menu)
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error occurred while fetching the menu item."})
@@ -87,7 +93,14 @@ func UpdateMenu(c *gin.Context) {
 		return
 	}
 
-	id := c.Param("id")
+	id, err := primitive.ObjectIDFromHex(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Error occurred while parsing the menu id.",
+		})
+		return
+	}
+
 	filter := bson.M{"_id": id}
 
 	var updateObj primitive.D

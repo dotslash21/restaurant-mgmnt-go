@@ -90,10 +90,16 @@ func GetTable(c *gin.Context) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	id := c.Param("id")
+	id, err := primitive.ObjectIDFromHex(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Error occurred while parsing the table id.",
+		})
+		return
+	}
 
 	var table models.Table
-	err := tableCollection.FindOne(ctx, bson.M{"_id": id}).Decode(&table)
+	err = tableCollection.FindOne(ctx, bson.M{"_id": id}).Decode(&table)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Table not found"})
 		return
@@ -148,7 +154,14 @@ func UpdateTable(c *gin.Context) {
 	table.UpdatedAt, _ = time.Parse(time.RFC3339, time.Now().Format(time.RFC3339))
 	updateObj = append(updateObj, bson.E{Key: "updated_at", Value: table.UpdatedAt})
 
-	id := c.Param("id")
+	id, err := primitive.ObjectIDFromHex(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Error occurred while parsing the table id.",
+		})
+		return
+	}
+
 	filter := bson.M{"_id": id}
 	upsert := true
 	opt := options.UpdateOptions{Upsert: &upsert}

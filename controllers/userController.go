@@ -92,10 +92,16 @@ func GetUser(c *gin.Context) {
 	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Second)
 	defer cancel()
 
-	id := c.Param("id")
+	id, err := primitive.ObjectIDFromHex(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Error occurred while parsing the user id.",
+		})
+		return
+	}
 
 	var user models.User
-	err := userCollection.FindOne(ctx, bson.M{"_id": id}).Decode(&user)
+	err = userCollection.FindOne(ctx, bson.M{"_id": id}).Decode(&user)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{
 			"error": "Error occurred while fetching the user item.",

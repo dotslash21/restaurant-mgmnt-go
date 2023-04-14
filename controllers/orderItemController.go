@@ -90,10 +90,16 @@ func GetOrderItem(c *gin.Context) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	id := c.Param("id")
+	id, err := primitive.ObjectIDFromHex(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Error occurred while parsing the order item id.",
+		})
+		return
+	}
 
 	var orderItem models.OrderItem
-	err := orderItemCollection.FindOne(ctx, bson.M{"_id": id}).Decode(&orderItem)
+	err = orderItemCollection.FindOne(ctx, bson.M{"_id": id}).Decode(&orderItem)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error occurred while fetching the orderItem item."})
 	}
@@ -332,7 +338,14 @@ func UpdateOrderItem(c *gin.Context) {
 	orderItem.UpdatedAt, _ = time.Parse(time.RFC3339, time.Now().Format(time.RFC3339))
 	updateObj = append(updateObj, bson.E{Key: "$set", Value: orderItem})
 
-	id := c.Param("id")
+	id, err := primitive.ObjectIDFromHex(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Error occurred while parsing the order item id.",
+		})
+		return
+	}
+
 	filter := bson.M{"_id": id}
 	upsert := true
 	opt := options.UpdateOptions{
