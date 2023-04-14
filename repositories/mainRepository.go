@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 	"os"
+	"restaurant-mgmnt/configs"
 	"time"
 
 	"go.mongodb.org/mongo-driver/mongo"
@@ -11,6 +12,11 @@ import (
 )
 
 func DbInstance() *mongo.Client {
+	err := configs.LoadConfig()
+	if err != nil {
+		panic(err)
+	}
+
 	uri := os.Getenv("DB_URI")
 
 	// Connect to the database.
