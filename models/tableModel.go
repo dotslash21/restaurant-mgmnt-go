@@ -12,7 +12,7 @@ import (
 type Table struct {
 	Id             primitive.ObjectID `json:"id,omitempty" bson:"_id,omitempty"`
 	NumberOfGuests *int               `json:"number_of_guests" bson:"number_of_guests" validate:"required"`
-	TableNumber    *int               `json:"table_number" bson:"table_number" validate:"required"`
+	Number         *int               `json:"number" bson:"number" validate:"required"`
 	CreatedAt      time.Time          `json:"created_at" bson:"created_at"`
 	UpdatedAt      time.Time          `json:"updated_at" bson:"updated_at"`
 }
