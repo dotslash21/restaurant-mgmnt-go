@@ -4,14 +4,10 @@ import (
 	"os"
 	"restaurant-mgmnt/configs"
 	"restaurant-mgmnt/middlewares"
-	"restaurant-mgmnt/repositories"
 	"restaurant-mgmnt/routers"
 
 	"github.com/gin-gonic/gin"
-	"go.mongodb.org/mongo-driver/mongo"
 )
-
-var foodCollection *mongo.Collection = repositories.OpenCollection(repositories.Client, "food")
 
 func main() {
 	err := configs.LoadConfig()
@@ -31,7 +27,7 @@ func main() {
 	routers.UserRouter(router)
 
 	// Protected routes - start
-	router.Use(middlewares.Authentication())
+	router.Use(middlewares.Authentication)
 
 	routers.FoodRouter(router)
 	routers.InvoiceRouter(router)

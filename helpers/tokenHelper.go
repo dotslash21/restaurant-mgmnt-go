@@ -2,6 +2,7 @@ package helpers
 
 import (
 	"context"
+	"errors"
 	"log"
 	"os"
 	"restaurant-mgmnt/models"
@@ -71,4 +72,33 @@ func UpdateTokens(signedToken, signedRefreshToken string, uid primitive.ObjectID
 	); err != nil {
 		log.Panic(err)
 	}
+}
+
+func ValidateToken(signedToken string) (claims *models.SignedDetails, err error) {
+	// Parse the token
+	token, err := jwt.ParseWithClaims(
+		signedToken,
+		&models.SignedDetails{},
+		func(token *jwt.Token) (interface{}, error) {
+			return []byte(SECRET_KEY), nil
+		},
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	// Validate the token
+	claims, ok := token.Claims.(*models.SignedDetails)
+	if !ok {
+		err = errors.New("invalid token")
+		return nil, err
+	}
+
+	// Expiry check
+	if claims.ExpiresAt < time.Now().Local().Unix() {
+		err = errors.New("token expired")
+		return nil, err
+	}
+
+	return claims, nil
 }
